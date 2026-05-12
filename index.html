@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Scorer - Kylie Kelly</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pink:#d46ef5;
+  --black:#1a1a1a;
+  --off-white:#f0ede8;
+  --white:#ffffff;
+  --surface:#f7f4f0;
+  --border:#1a1a1a;
+  --border-light:#ddd9d3;
+  --text:#1a1a1a;
+  --muted:#6b7280;
+  --hint:#9ca3af;
+  --green:#1D9E75;
+  --amber:#f59e0b;
+  --red:#e5604c;
+}
+body{background:var(--off-white);min-height:100vh;font-family:'Inter',sans-serif;color:var(--text)}
+.hero-wrap{width:100%}
+.page-wrap{max-width:680px;margin:0 auto 24px;border:2px solid var(--black);border-top:none}
+
+/* ── ZINE HERO ── */
+.zine-hero{background:var(--pink);padding:0;width:100%}
+.zine-masthead{background:var(--black);padding:8px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--pink)}
+.zine-masthead-title{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--white)}
+.zine-masthead-meta{font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.35);letter-spacing:0.08em}
+.zine-cover{background:var(--pink);padding:28px 28px 0;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;max-width:680px;margin:0 auto}
+.zine-cover-left{}
+.zine-rule-strip{background:var(--black);height:16px;margin-top:20px;display:flex;align-items:center;padding:0 28px;gap:8px}
+.zine-vol{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--white);margin-bottom:8px}
+.zine-headline{font-family:'Playfair Display',serif;font-size:clamp(32px,6vw,52px);font-weight:700;color:var(--black);line-height:1.0;letter-spacing:-0.02em}
+.zine-headline em{font-style:italic;color:var(--white)}
+.zine-deck{font-family:'Inter',sans-serif;font-size:13px;color:rgba(26,26,26,0.65);line-height:1.6;margin-top:10px;max-width:380px}
+.zine-cover-right{padding-bottom:0;flex-shrink:0}
+.zine-badge{background:var(--black);color:var(--white);width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.zine-badge-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--pink);line-height:1}
+.zine-badge-label{font-family:'Space Mono',monospace;font-size:7px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:2px}
+.zine-rule-strip{background:var(--black);height:16px;margin-top:20px;display:flex;align-items:center;padding:0 28px;gap:8px}
+.zine-rule-dot{width:5px;height:5px;border-radius:50%;background:var(--pink);flex-shrink:0}
+.zine-rule-line{flex:1;height:1px;background:rgba(212,110,245,0.3)}
+
+/* ── SCORE DISPLAY ── */
+.pstrip{background:var(--white);border:1.5px solid var(--black);border-top:none;padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:0}
+.plbl{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.pscore-dots{display:flex;gap:5px;flex:1;align-items:center}
+.pscore-dot{width:10px;height:10px;border-radius:50%;background:var(--border-light);transition:background 0.4s ease,transform 0.3s ease}
+.pscore-dot.active{transform:scale(1.2)}
+.pcnt{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--pink);white-space:nowrap;min-width:70px;text-align:right;line-height:1}
+
+/* ── LAYOUT ── */
+.main{padding:16px 16px 24px}
+
+/* ── INTRO BAND ── */
+.intro-band{background:var(--white);border-left:4px solid var(--pink);border-bottom:1.5px solid var(--black);padding:18px 24px;margin-bottom:0}
+.intro-band-text{font-family:'Inter',sans-serif;font-size:13px;color:var(--black);line-height:1.7}
+.intro-band-text strong{color:var(--black);font-weight:600}
+
+/* ── ZINE SECTION HEADER ── */
+.zine-section{background:var(--black);padding:10px 20px;display:flex;align-items:center;gap:10px}
+.zine-section-num{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--pink);letter-spacing:0.1em}
+.zine-section-title{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--white)}
+.zine-section-rule{flex:1;height:1px;background:rgba(255,255,255,0.1)}
+
+/* ── EMAIL TYPE SELECTOR ── */
+.type-panel{background:var(--white);border:1.5px solid var(--black);border-top:none;padding:20px 20px 24px;margin-bottom:16px}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.type-card{background:var(--surface);border:1.5px solid var(--border-light);padding:14px 14px 12px;cursor:pointer;transition:border-color 0.15s,background 0.15s;position:relative}
+.type-card:hover{border-color:var(--pink)}
+.type-card.selected{border-color:var(--black);background:var(--black)}
+.type-card.selected .type-name{color:var(--pink)}
+.type-card.selected .type-desc{color:rgba(255,255,255,0.5)}
+.type-card.selected .type-check{opacity:1}
+.type-emoji{font-size:18px;margin-bottom:6px;display:block}
+.type-name{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--black);margin-bottom:4px}
+.type-desc{font-size:13px;color:var(--muted);line-height:1.5}
+.type-check{position:absolute;top:10px;right:10px;width:16px;height:16px;background:var(--pink);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.15s}
+.type-check svg{width:8px;height:8px}
+
+/* ── FORM PANEL ── */
+.form-panel{background:var(--white);border:1.5px solid var(--black);border-top:none;padding:20px 20px 24px;margin-bottom:16px}
+.field-label{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block}
+.field-group{margin-bottom:16px}
+input[type="text"],textarea{width:100%;background:var(--surface);border:1.5px solid var(--border-light);padding:10px 13px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;-webkit-appearance:none;border-radius:0}
+input[type="text"]:focus,textarea:focus{border-color:var(--pink)}
+textarea{resize:vertical;min-height:180px;line-height:1.65}
+.char-count{font-size:10px;color:var(--hint);text-align:right;margin-top:4px;font-family:'Space Mono',monospace}
+
+/* ── SCORE BTN ── */
+.btn-score{width:100%;background:var(--black);color:var(--white);border:none;padding:15px 28px;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s;border-top:3px solid var(--pink);margin-top:4px}
+.btn-score:hover{opacity:0.85}
+.btn-score:disabled{opacity:0.35;cursor:not-allowed}
+.btn-error{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);padding:10px 0;display:none}
+
+/* ── LOADING ── */
+.loading-panel{background:var(--white);border:1.5px solid var(--black);border-top:none;padding:40px 20px;text-align:center;margin-bottom:16px;display:none}
+.loading-title{font-family:'Playfair Display',serif;font-style:italic;font-size:22px;color:var(--pink);margin-bottom:6px}
+.loading-sub{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--hint)}
+.dots span{display:inline-block;animation:blink 1.2s infinite}
+.dots span:nth-child(2){animation-delay:0.2s}
+.dots span:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,80%,100%{opacity:0.15}40%{opacity:1}}
+
+/* ── RESULTS ── */
+.results-wrap{display:none}
+
+.verdict-band{background:var(--black);padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:3px solid var(--pink)}
+.verdict-left{}
+.verdict-type-tag{font-family:'Space Mono',monospace;font-size:8px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--pink);margin-bottom:6px}
+.verdict-label{font-family:'Playfair Display',serif;font-style:italic;font-size:22px;color:var(--white);line-height:1.2}
+.verdict-subject{font-family:'Inter',sans-serif;font-size:11px;color:rgba(255,255,255,0.35);font-style:italic;margin-top:5px;line-height:1.4;max-width:300px}
+.verdict-right{flex-shrink:0;text-align:right;display:flex;flex-direction:column;align-items:flex-end;justify-content:center}
+.verdict-score{font-family:'Playfair Display',serif;font-size:64px;font-weight:700;color:var(--white);line-height:1;display:block}
+.verdict-denom{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.25);display:block;margin-top:2px}
+
+.scores-panel{background:var(--white);border:1.5px solid var(--black);border-top:none;padding:16px 20px;margin-bottom:0}
+.score-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--off-white)}
+.score-row:last-child{border-bottom:none}
+.score-tag{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--black);color:var(--white);padding:3px 8px;white-space:nowrap;flex-shrink:0;width:120px}
+.score-bar-wrap{flex:1;height:4px;background:var(--off-white)}
+.score-bar-fill{height:4px;transition:width 1s ease}
+.score-num{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;width:28px;text-align:right;flex-shrink:0}
+
+.feedback-section{background:var(--white);border:1.5px solid var(--black);border-top:none;padding:16px 20px;margin-bottom:0}
+.feedback-zine-head{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--black);padding-bottom:10px;margin-bottom:10px;border-bottom:2px solid var(--black)}
+.feedback-item{padding:10px 0;border-bottom:1px dashed var(--border-light);display:flex;gap:10px;align-items:flex-start}
+.feedback-item:last-child{border-bottom:none}
+.feedback-num{font-size:18px;flex-shrink:0;margin-top:0;line-height:1.4}
+.feedback-text{font-size:14px;color:var(--text);line-height:1.65}
+
+.tweak-head{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--black);border-top:2px solid var(--black);padding-top:10px;margin:14px 0 10px}
+.tweak-item{padding:10px 0;border-bottom:1px dashed var(--border-light);display:flex;gap:10px;align-items:flex-start}
+.tweak-item:last-child{border-bottom:none}
+.tweak-tag{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;background:var(--black);color:var(--white);padding:2px 7px;flex-shrink:0;margin-top:1px}
+.tweak-text{font-size:14px;color:var(--muted);line-height:1.65}
+
+/* ── CELEBRATION ── */
+.celeb-band{background:var(--black);padding:0;margin-top:16px}
+.celeb-inner{padding:28px 24px 24px}
+.celeb-vol{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--pink);margin-bottom:8px}
+.celeb-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--white);line-height:1.2;margin-bottom:12px}
+.celeb-title em{font-style:italic;color:var(--pink)}
+.celeb-body{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:16px}
+.celeb-tools{display:flex;flex-direction:column;gap:6px;margin:14px 0 18px}
+.celeb-tool-item{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.5}
+.celeb-rule{height:2px;background:var(--pink);margin:0}
+.celeb-cta{background:var(--black);padding:24px 24px 28px;text-align:center;border-top:none}
+.celeb-cancel{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.12em;text-transform:uppercase;margin-top:10px;display:block}
+.btn-community{display:inline-block;background:var(--pink);color:var(--black);border:2px solid var(--pink);padding:15px 36px;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:background 0.15s,color 0.15s}
+.btn-community:hover{background:var(--white);border-color:var(--white)}
+
+.btn-again{width:100%;background:var(--surface);color:var(--black);border:1.5px solid var(--black);padding:15px 28px;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;margin-top:12px}
+.btn-again:hover{background:var(--black);color:var(--white)}
+
+.footer{background:var(--off-white);border-top:2px solid var(--pink);padding:28px 24px 20px;text-align:center}
+.footer-brand{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:var(--black);margin-bottom:18px}
+.footer-links{display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:18px}
+.footer-link{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--black);text-decoration:none}
+.footer-link:hover{color:var(--pink)}
+.footer-dot{color:var(--hint);font-size:10px}
+.footer-legal{font-family:'Inter',sans-serif;font-size:11px;color:var(--hint);line-height:1.6}
+
+#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ZINE HERO - full width -->
+<div class="hero-wrap">
+<div class="zine-hero">
+  <div class="zine-masthead">
+    <span class="zine-masthead-title">Email Scorer</span>
+    <span class="zine-masthead-meta">Monthly Tool · Kylie Kelly</span>
+  </div>
+  <div class="zine-cover">
+    <div class="zine-cover-left">
+      <div class="zine-vol">The honest verdict on your email</div>
+      <div class="zine-headline">Send it.<br><em>Confidently.</em></div>
+      <div class="zine-deck">Paste the email you just wrote. Get scored on connection, clarity, conversion, and personality, so every email deepens the relationship and earns the click.</div>
+    </div>
+    <div class="zine-cover-right">
+      <div class="zine-badge">
+        <div class="zine-badge-num">4</div>
+        <div class="zine-badge-label">scores</div>
+      </div>
+    </div>
+  </div>
+  <div class="zine-rule-strip">
+    <div class="zine-rule-dot"></div>
+    <div class="zine-rule-line"></div>
+    <div class="zine-rule-dot"></div>
+    <div class="zine-rule-line"></div>
+    <div class="zine-rule-dot"></div>
+  </div>
+</div>
+</div><!-- /hero-wrap -->
+
+<div class="page-wrap">
+
+<!-- SCORE DISPLAY -->
+<div class="pstrip">
+  <span class="plbl">Your score</span>
+  <div class="pscore-dots" id="pscore-dots">
+    <div class="pscore-dot"></div><div class="pscore-dot"></div><div class="pscore-dot"></div><div class="pscore-dot"></div><div class="pscore-dot"></div>
+    <div class="pscore-dot"></div><div class="pscore-dot"></div><div class="pscore-dot"></div><div class="pscore-dot"></div><div class="pscore-dot"></div>
+  </div>
+  <span class="pcnt" id="pcnt">-</span>
+</div>
+
+<div class="main">
+
+  <!-- INTRO BAND -->
+  <div class="intro-band">
+    <div class="intro-band-text">You used the Send-It Tool to write it. Now let's make sure it's <strong>actually going to land.</strong> Pick your email type below, paste it in, and get the honest score.</div>
+  </div>
+
+  <!-- STEP 1: EMAIL TYPE -->
+  <div class="zine-section" id="type-section-header" style="margin-top:16px">
+    <span class="zine-section-num">01</span>
+    <span class="zine-section-title">What kind of email is this?</span>
+    <div class="zine-rule-line"></div>
+  </div>
+  <div class="type-panel" id="type-panel">
+    <div class="type-grid">
+      <div class="type-card" id="type-connection" onclick="selectType('connection')">
+        <div class="type-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="type-emoji">🤍</span>
+        <div class="type-name">Connection</div>
+        <div class="type-desc">Share a story, moment, or lesson that makes your reader feel like they actually know you</div>
+      </div>
+      <div class="type-card" id="type-teaching" onclick="selectType('teaching')">
+        <div class="type-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="type-emoji">📖</span>
+        <div class="type-name">Teaching</div>
+        <div class="type-desc">Teach one thing your reader can use right now - a tip, a reframe, or a mistake to avoid</div>
+      </div>
+      <div class="type-card" id="type-invitation" onclick="selectType('invitation')">
+        <div class="type-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="type-emoji">📮</span>
+        <div class="type-name">Invitation</div>
+        <div class="type-desc">Invite your audience into your free or paid offers - without the hard sell</div>
+      </div>
+      <div class="type-card" id="type-spotlight" onclick="selectType('spotlight')">
+        <div class="type-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span class="type-emoji">✨</span>
+        <div class="type-name">Spotlight</div>
+        <div class="type-desc">Point your list to a resource, episode, tool, or offer they need to know about</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: PASTE EMAIL -->
+  <div class="zine-section" id="paste-section-header">
+    <span class="zine-section-num">02</span>
+    <span class="zine-section-title">Paste your email</span>
+    <div class="zine-rule-line"></div>
+  </div>
+  <div class="form-panel" id="view-form">
+    <div class="field-group">
+      <label class="field-label" for="subject">Subject line</label>
+      <input type="text" id="subject" placeholder="e.g. Can I tell you something real?" maxlength="200">
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="body">Email body</label>
+      <textarea id="body" placeholder="Paste your full email here..."></textarea>
+      <div class="char-count" id="char-count">0 characters</div>
+    </div>
+    <div id="error-msg" class="btn-error"></div>
+    <button class="btn-score" id="score-btn" onclick="scoreEmail()">Score my email →</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-panel" id="view-loading">
+    <div class="loading-title">Reading your email<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    <div class="loading-sub" id="loading-tip" style="margin-top:6px">Scoring across 4 dimensions</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-wrap" id="view-results">
+
+    <div class="zine-section">
+      <span class="zine-section-num">03</span>
+      <span class="zine-section-title">Your verdict</span>
+      <div class="zine-rule-line"></div>
+    </div>
+
+    <div class="verdict-band" id="verdict-band"></div>
+
+    <div class="scores-panel" id="scores-panel"></div>
+
+    <div class="feedback-section" id="feedback-section"></div>
+
+    <button class="btn-again" onclick="resetTool()">Score another email →</button>
+
+    <!-- UPSELL CTA -->
+    <div class="celeb-band">
+      <div class="celeb-inner">
+        <div class="celeb-vol">Want more tools like this?</div>
+        <div class="celeb-title">This is just one of many<br><em>inside the community.</em></div>
+        <div class="celeb-body">Every month, 1,100+ business owners get a brand new done-for-you email tool — templates, frameworks, and step-by-step guides so you can stop overthinking and just send. For just $9/month.</div>
+        <div class="celeb-tools">
+          <span class="celeb-tool-item">📖 Subject Line Studio</span>
+          <span class="celeb-tool-item">💰 Launch Calculator</span>
+          <span class="celeb-tool-item">🗺️ Lead Magnet Launch Map</span>
+          <span class="celeb-tool-item">⚡ Visibility Tracker</span>
+          <span class="celeb-tool-item">🙏 Email List Building Affirmation Cards</span>
+          <span class="celeb-tool-item">🔥 & so much more</span>
+        </div>
+      </div>
+      <div class="celeb-rule"></div>
+      <div class="celeb-cta">
+        <a href="https://www.skool.com/email-marketing-skool/about" target="_blank" class="btn-community">Join the community for $9/month →</a>
+        <span class="celeb-cancel">Cancel anytime. No lock-in.</span>
+      </div>
+    </div>
+
+  </div><!-- /results-wrap -->
+
+  <div class="footer">
+    <div class="footer-brand">Kylie Kelly</div>
+    <div class="footer-links">
+      <a href="https://kyliekelly.com" class="footer-link">kyliekelly.com</a>
+      <span class="footer-dot">·</span>
+      <a href="https://kyliekelly.com/privacy-policy" class="footer-link">Privacy Policy &amp; Terms</a>
+    </div>
+    <div class="footer-legal">© 2026 Kylie Kelly · ABN 76 205 632 387 · All rights reserved.</div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /page-wrap -->
+
+<script>
+// ── STATE ──
+let selectedType = null;
+
+function selectType(type) {
+  selectedType = type;
+  ['connection','teaching','invitation','spotlight'].forEach(t => {
+    document.getElementById('type-'+t).classList.toggle('selected', t === type);
+  });
+}
+
+// ── UTILS ──
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function contains(text,terms){ const t=text.toLowerCase(); return terms.some(w=>t.includes(w)); }
+function countMatches(text,terms){ const t=text.toLowerCase(); return terms.filter(w=>t.includes(w)).length; }
+function sentences(text){ return text.split(/[.!?]+/).map(s=>s.trim()).filter(Boolean); }
+function wordCount(text){ return (text.toLowerCase().match(/\b\w+\b/g)||[]).length; }
+
+// ── SCORING ──
+function scoreConnection(subject,body,type){
+  let s=50;
+  const txt=(subject+' '+body).toLowerCase();
+  const wc=wordCount(body);
+  if(contains(txt,['i was','i remember','i almost','i used to','when i','there was a moment','can i tell you','honest','real talk','true story'])) s+=15;
+  if(contains(txt,["you're not alone","i've been there","if you've ever","sound familiar","i get it"])) s+=12;
+  if(contains(txt,['hit reply','reply to this','tell me',"i'd love to hear",'write back'])) s+=12;
+  if(contains(txt,['story','happened','moment','realised','realized','felt like'])) s+=8;
+  if(wc>=80&&wc<=400) s+=6;
+  const sents=sentences(body);
+  if(sents.length>0&&sents[0].split(' ').length<=12) s+=5;
+  if(contains(txt,['hope this email finds you','touching base','circling back','dear subscriber'])) s-=15;
+  if(wc>600) s-=10;
+  // type bonus
+  if(type==='connection') s+=8;
+  return Math.min(100,Math.max(10,s));
+}
+
+function scoreClarity(subject,body,type){
+  let s=50;
+  const sents=sentences(body);
+  const wc=wordCount(body);
+  const paraCount=body.split(/\n\s*\n/).filter(p=>p.trim()).length;
+  const avgSentLen=wc/Math.max(sents.length,1);
+  if(avgSentLen<15) s+=15;
+  else if(avgSentLen<20) s+=8;
+  else if(avgSentLen>30) s-=10;
+  if(wc<=300) s+=10;
+  else if(wc<=500) s+=5;
+  else if(wc>700) s-=15;
+  if(paraCount>=2&&paraCount<=6) s+=10;
+  if(paraCount>8) s-=8;
+  const ctaCount=countMatches(body.toLowerCase(),['click here','sign up','buy now','join now','download','register','book a call','grab your spot','hit reply','reply to']);
+  if(ctaCount===1) s+=10;
+  if(ctaCount>2) s-=15;
+  if(ctaCount===0) s-=5;
+  if(type==='teaching') s+=8;
+  return Math.min(100,Math.max(10,s));
+}
+
+function scoreConversion(subject,body,type){
+  let s=45;
+  const txt=body.toLowerCase();
+  if(contains(txt,['hit reply','reply to this','just reply','write back'])) s+=18;
+  if(contains(txt,['click here','grab your spot','join now','sign up','get access','book your'])) s+=12;
+  if(contains(txt,['link below','link in','→','click the link'])) s+=8;
+  if(contains(txt,['last chance','closing','ends tonight','doors close','limited','only a few'])) s+=10;
+  if(contains(txt,['no pressure','only if',"when you're ready",'if this resonates','if that\'s you'])) s+=8;
+  if(contains(txt,["if you're struggling","if you've been","if this sounds like you","if you're ready"])) s+=8;
+  if(!contains(txt,['reply','click','link','join','grab','book','sign','get','→'])) s-=20;
+  if(countMatches(txt,['buy','purchase','invest','payment','$','price','cost'])>3) s-=10;
+  if(type==='invitation') s+=10;
+  if(type==='spotlight') s+=6;
+  return Math.min(100,Math.max(10,s));
+}
+
+function scorePersonality(subject,body,type){
+  let s=45;
+  const txt=(subject+' '+body).toLowerCase();
+  if(contains(txt,['honestly','real talk',"let's be honest",'can i tell you','truth is',"here's the thing",'ok so'])) s+=14;
+  if(contains(txt,['lol','haha','literally','kind of','sort of','...','-','right?','you know?'])) s+=10;
+  if(contains(txt,['i almost','i nearly','i was so','i decided','i realised','i realized'])) s+=10;
+  const excl=(body.match(/!/g)||[]).length;
+  const ellipses=(body.match(/\.\.\./g)||[]).length;
+  if(excl>=1&&excl<=3) s+=5;
+  if(excl>5) s-=8;
+  if(ellipses>=1) s+=5;
+  if(contains(txt,['leverage','synergy','utilize','in order to','as per','please find','i am writing to'])) s-=20;
+  if(contains(txt,['best regards','kind regards','yours sincerely'])) s-=15;
+  const wc=wordCount(body);
+  if(wc>0){
+    const personal=countMatches(body.toLowerCase(),[' i ',' i\'',' my ',' me ']);
+    if(personal<2) s-=10;
+  }
+  if(type==='connection') s+=6;
+  return Math.min(100,Math.max(10,s));
+}
+
+function scoreSubject(subject){
+  if(!subject||!subject.trim()) return 0;
+  let s=50;
+  const t=subject.toLowerCase();
+  if(contains(t,['can i tell you','honest','real','truth','something i','almost','this changed'])) s+=20;
+  if(t.includes('?')) s+=12;
+  if(t.includes('...')) s+=8;
+  if(contains(t,['you','your'])) s+=10;
+  if(subject.split(' ').length<=7) s+=8;
+  if(/newsletter #?\d+/i.test(t)) s-=30;
+  if(contains(t,['weekly update','monthly update','tips for','3 tips','5 ways'])) s-=20;
+  if(subject.split(' ').length>12) s-=10;
+  return Math.min(100,Math.max(5,s));
+}
+
+// ── FEEDBACK POOLS ──
+const TYPE_LABELS = {
+  connection:  'Connection email',
+  teaching:    'Teaching email',
+  invitation:  'Invitation email',
+  spotlight:   'Spotlight email'
+};
+
+const FB = {
+  connection:{
+    strong:[
+      "Your personality comes through clearly - this reads like a real human wrote it, not a brand. That's rare and it matters.",
+      "The personal storytelling is doing real work here. Readers will feel like you're talking directly to them.",
+      "You're inviting a two-way conversation, not just broadcasting. That's exactly what builds a loyal list.",
+      "The emotional honesty is your biggest asset. People trust vulnerability more than polish.",
+      "This feels like a voice note, not a newsletter. That's the sweet spot.",
+    ],
+    improve:[
+      "Try opening with a personal moment or a 'can I tell you something honest?' line - it pulls people in immediately.",
+      "Add a 'hit reply' prompt somewhere. Even one reply invitation changes how this email feels to receive.",
+      "The connection here is a bit surface-level. Try sharing a specific moment - what happened, how you felt, what shifted.",
+      "Consider adding a 'you're not alone' line. Your readers are often struggling quietly - naming that builds instant trust.",
+      "This reads more like a broadcast than a conversation. Try addressing your reader as one specific person, not a group.",
+    ]
+  },
+  clarity:{
+    strong:[
+      "One idea, one direction - your reader won't get lost. That's harder to do than it sounds.",
+      "Clean structure, short paragraphs, clear flow. This is a pleasure to read.",
+      "No fluff, no over-explaining. You've said what needed to be said and stopped. That's a skill.",
+      "This email has one job and it does it well.",
+      "Easy to skim, easy to understand. Exactly what an inbox-friendly email looks like.",
+    ],
+    improve:[
+      "There are a couple of ideas competing here. Pick the strongest one and save the rest for another email.",
+      "Some of these sentences are doing too much. Try splitting them - one idea per sentence, full stop.",
+      "The email is a bit long. See if you can cut 20–30% without losing the message. Less is almost always more.",
+      "The main point gets a bit buried. Try leading with the core idea in the first 2 lines, then backing it up.",
+      "Multiple CTAs are pulling your reader in different directions. Pick one and commit.",
+    ]
+  },
+  conversion:{
+    strong:[
+      "Your CTA is clear and low-pressure - it feels like a natural next step, not a hard sell. That's the playbook.",
+      "The invitation here is warm and genuine. You're guiding your reader forward without pushing.",
+      "One clear thing to do. That single focus is what drives action.",
+      "The 'if this resonates' framing is smart - it removes pressure and actually increases clicks.",
+      "There's a clear reason to click or reply. Your reader knows exactly what happens next.",
+    ],
+    improve:[
+      "There's no clear CTA here. Even a simple 'hit reply and tell me X' gives your reader somewhere to go.",
+      "The ask is a bit buried - move your CTA up or make it its own line so it's impossible to miss.",
+      "Try softening the CTA with 'if this resonates' or 'when you're ready' - it removes pressure and actually increases clicks.",
+      "Your reader might be interested but unsure what to do. Add one clear next step.",
+      "Consider adding a reply CTA even if you also have a link - replies tell your ESP this is a real conversation.",
+    ]
+  },
+  personality:{
+    strong:[
+      "This sounds like you. That's the whole game - and you're winning it.",
+      "Your voice is distinct here. There's personality in every line.",
+      "Warm, a little bold, completely human. This is your edge.",
+      "This doesn't sound like it was written by committee. It sounds like a real person - and that's everything.",
+      "Confident without being corporate, warm without being performative. Tone is exactly right.",
+    ],
+    improve:[
+      "This reads a little flat. Try adding one honest, slightly vulnerable sentence - something you almost didn't say.",
+      "The voice feels a bit polished - almost too tidy. Let it breathe. A bit of messiness is more trustworthy.",
+      "Add one line that sounds unmistakably like you - a phrase you'd actually say out loud.",
+      "This could have been written by anyone. What's your specific take? That's what makes it yours.",
+      "Try reading it out loud. If any sentence sounds stiff, rewrite it the way you'd say it to a friend.",
+    ]
+  },
+  subject:{
+    missing:[
+      "No subject line - that's the first thing to fix. It's the reason someone opens (or doesn't). Try something personal or a question.",
+      "You've left the subject line blank. Add something curious, honest, or direct - it changes everything.",
+    ],
+    strong:[
+      "Strong subject line - creates curiosity without being clickbaity. This will get opened.",
+      "This subject line feels personal, like it was written for one specific person. That's the goal.",
+      "Short, punchy, intriguing. Your open rate will thank you.",
+    ],
+    improve:[
+      "The subject line is doing its job but it's a bit safe. Try making it more personal or adding a question mark.",
+      "Generic subject lines get skipped. Try something pulled straight from your email body - a real line that hooks.",
+      "This reads more like a label than a reason to open. What's the one feeling you want your reader to have before they click?",
+    ]
+  },
+  // type-specific extra feedback
+  typeBonus:{
+    connection:[
+      "As a connection email, the goal is to make one person feel seen - not to educate or sell. Lean harder into that.",
+      "Connection emails live or die on the story. Make sure yours has a clear moment and a clear feeling.",
+    ],
+    teaching:[
+      "Teaching emails work best with one crystal-clear takeaway. If your reader can't summarise it in a sentence, tighten it.",
+      "Great teaching email structure: here's what I learned → here's why it matters → here's how you can use it.",
+    ],
+    invitation:[
+      "Invitation emails should feel warm, not pushy. Your reader should think 'this is for me' - not 'I'm being sold to'.",
+      "The best invitation emails paint a picture of what life looks like after they say yes. Is that picture clear here?",
+    ],
+    spotlight:[
+      "Spotlight emails need one strong reason why THIS thing, right now, is worth their attention. Is that reason obvious?",
+      "Keep spotlight emails tight - get in, make the recommendation, get out. Let the thing you're spotlighting do the work.",
+    ]
+  }
+};
+
+const OVERALL_LABELS = {
+  high:  ['Ready to send.','Hit send. Seriously.','This one\'s good. Send it.'],
+  mid:   ['Nearly there.','A couple of tweaks and you\'re done.','Almost - just a small fix or two.'],
+  low:   ['Good bones. Let\'s sharpen it.','You\'ve got something here.','Worth the work - a few fixes and this will sing.'],
+  base:  ['Back to the drawing board.','This one needs some love before it goes out.']
+};
+
+function overallLabel(s){
+  if(s>=85) return pick(OVERALL_LABELS.high);
+  if(s>=68) return pick(OVERALL_LABELS.mid);
+  if(s>=50) return pick(OVERALL_LABELS.low);
+  return pick(OVERALL_LABELS.base);
+}
+
+function scoreColor(s){
+  if(s>=80) return '#1D9E75';
+  if(s>=60) return '#d46ef5';
+  if(s>=40) return '#f59e0b';
+  return '#e5604c';
+}
+
+function runScore(subject,body,type){
+  const connection  = scoreConnection(subject,body,type);
+  const clarity     = scoreClarity(subject,body,type);
+  const conversion  = scoreConversion(subject,body,type);
+  const personality = scorePersonality(subject,body,type);
+  const subjectScore= scoreSubject(subject);
+
+  let overall=Math.round((connection*0.28)+(clarity*0.22)+(conversion*0.25)+(personality*0.25));
+  if(!subject||!subject.trim()) overall=Math.max(10,overall-8);
+  else if(subjectScore>=70) overall=Math.min(100,overall+5);
+  overall=Math.min(100,Math.max(10,overall));
+
+  const strengths=[], tweaks=[];
+
+  // subject
+  if(!subject||!subject.trim()) tweaks.push(pick(FB.subject.missing));
+  else if(subjectScore>=65) strengths.push(pick(FB.subject.strong));
+  else tweaks.push(pick(FB.subject.improve));
+
+  // categories
+  const cats=[
+    {key:'connection', score:connection, fb:FB.connection},
+    {key:'clarity',    score:clarity,    fb:FB.clarity},
+    {key:'conversion', score:conversion, fb:FB.conversion},
+    {key:'personality',score:personality,fb:FB.personality},
+  ].sort((a,b)=>b.score-a.score);
+
+  cats.slice(0,2).forEach(c=>{ if(c.score>=60) strengths.push(pick(c.fb.strong)); });
+  cats.slice(2).forEach(c=>{ if(c.score<80) tweaks.push(pick(c.fb.improve)); });
+
+  // type-specific bonus tweak
+  if(type && FB.typeBonus[type]) tweaks.push(pick(FB.typeBonus[type]));
+
+  return { overall, scores:{connection,clarity,conversion,personality}, strengths:strengths.slice(0,2), tweaks:tweaks.slice(0,3) };
+}
+
+// ── UI ──
+const bodyEl=document.getElementById('body');
+const subjectEl=document.getElementById('subject');
+bodyEl.addEventListener('input',()=>{
+  const c=bodyEl.value.length;
+  document.getElementById('char-count').textContent=c+' character'+(c!==1?'s':'');
+});
+
+// CONFETTI
+const canvas=document.getElementById('confetti-canvas');
+const ctx=canvas.getContext('2d');
+let particles=[],animFrame;
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+const COLORS=['#d46ef5','#ffffff','#1D9E75','#f59e0b','#e5604c','#a855f7','#fcd34d','#1a1a1a'];
+function spawnConfetti(n){
+  for(let i=0;i<n;i++) particles.push({x:Math.random()*canvas.width,y:-10,w:6+Math.random()*6,h:3+Math.random()*4,color:COLORS[Math.floor(Math.random()*COLORS.length)],vx:(Math.random()-0.5)*4,vy:2+Math.random()*4,angle:Math.random()*Math.PI*2,spin:(Math.random()-0.5)*0.2,alpha:1,life:0.003+Math.random()*0.003});
+}
+function tickConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles=particles.filter(p=>p.alpha>0);
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.angle+=p.spin;p.alpha-=p.life;ctx.save();ctx.globalAlpha=Math.max(0,p.alpha);ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});
+  if(particles.length>0) animFrame=requestAnimationFrame(tickConfetti);
+  else ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+function fireConfetti(){cancelAnimationFrame(animFrame);particles=[];spawnConfetti(220);tickConfetti();setTimeout(()=>spawnConfetti(180),600);setTimeout(()=>spawnConfetti(120),1400);}
+
+// ── LOADING TIPS ──
+const LOADING_TIPS=[
+  'Checking your opening line...',
+  'Scanning for personality...',
+  'Looking for your CTA...',
+  'Reading between the lines...',
+  'Checking the connection score...',
+  'Measuring clarity...',
+  'Assessing conversion signals...',
+  'Feeling the warmth...',
+  'Almost there...',
+];
+let tipInterval=null;
+function startLoadingTips(){
+  const el=document.getElementById('loading-tip');
+  let i=0; el.textContent=LOADING_TIPS[0];
+  tipInterval=setInterval(()=>{i=(i+1)%LOADING_TIPS.length;el.textContent=LOADING_TIPS[i];},380);
+}
+function stopLoadingTips(){clearInterval(tipInterval);}
+
+function showView(name){
+  document.getElementById('view-form').style.display    = name==='form'    ?'block':'none';
+  document.getElementById('view-loading').style.display = name==='loading' ?'block':'none';
+  document.getElementById('view-results').style.display = name==='results' ?'block':'none';
+  // Hide intro band on results
+  const introBand=document.querySelector('.intro-band');
+  if(introBand) introBand.style.display=name==='results'?'none':'';
+  // Hide type selector and paste section when showing results
+  const hideOnResults=['type-section-header','type-panel','paste-section-header','view-form'];
+  hideOnResults.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=name==='results'?'none':(id==='view-form'?(name==='form'?'block':'none'):'');
+  });
+  if(name==='loading') startLoadingTips(); else stopLoadingTips();
+}
+
+function resetTool(){
+  document.getElementById('pcnt').textContent='-';
+  document.getElementById('pcnt').style.color='#d46ef5';
+  document.querySelectorAll('.pscore-dot').forEach(d=>{d.classList.remove('active');d.style.background='';});
+  document.getElementById('score-btn').disabled=false;
+  document.getElementById('error-msg').style.display='none';
+  // Clear inputs
+  document.getElementById('subject').value='';
+  document.getElementById('body').value='';
+  document.getElementById('char-count').textContent='0 characters';
+  selectedType=null;
+  ['connection','teaching','invitation','spotlight'].forEach(t=>document.getElementById('type-'+t).classList.remove('selected'));
+  // Restore visibility
+  ['type-section-header','type-panel','paste-section-header'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display='';
+  });
+  const introBand=document.querySelector('.intro-band');
+  if(introBand) introBand.style.display='';
+  showView('form');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function scoreEmail(){
+  const subject=subjectEl.value.trim();
+  const body=bodyEl.value.trim();
+  const errEl=document.getElementById('error-msg');
+
+  if(!selectedType){
+    errEl.style.display='block';
+    errEl.textContent='← Pick your email type first, then we can score it';
+    return;
+  }
+  if(!body||body.length<50){
+    errEl.style.display='block';
+    errEl.textContent='← Paste your email body so we have something to work with';
+    return;
+  }
+  errEl.style.display='none';
+  document.getElementById('score-btn').disabled=true;
+  showView('loading');
+
+  setTimeout(()=>{
+    const result=runScore(subject,body,selectedType);
+    renderResults(result,subject,selectedType);
+  },1200);
+}
+
+function renderResults(result,subject,type){
+  const {overall,scores,strengths,tweaks}=result;
+  const color=scoreColor(overall);
+  const label=overallLabel(overall);
+
+  document.getElementById('pcnt').textContent=overall+'/100';
+  document.getElementById('pcnt').style.color=color;
+  // Update dots
+  const dots=document.querySelectorAll('.pscore-dot');
+  const activeDots=Math.round((overall/100)*dots.length);
+  dots.forEach((d,i)=>{
+    if(i<activeDots){d.style.background=color;d.classList.add('active');}
+    else{d.style.background='';d.classList.remove('active');}
+  });
+
+  // Verdict band
+  const circ=2*Math.PI*38;
+  const fill=(overall/100)*circ;
+  document.getElementById('verdict-band').innerHTML=`
+    <div class="verdict-left">
+      <div class="verdict-type-tag">${TYPE_LABELS[type]||''}</div>
+      <div class="verdict-label">${label}</div>
+      ${subject?`<div class="verdict-subject">"${subject.length>60?subject.slice(0,57)+'…':subject}"</div>`:'<div class="verdict-subject">No subject line provided</div>'}
+    </div>
+    <div class="verdict-right">
+      <div class="verdict-score" style="color:${color}">${overall}</div>
+      <span class="verdict-denom">/100</span>
+    </div>`;
+
+  // Scores panel
+  const cats=[
+    {key:'connection', label:'Connection', score:scores.connection},
+    {key:'clarity',    label:'Clarity',    score:scores.clarity},
+    {key:'conversion', label:'Conversion', score:scores.conversion},
+    {key:'personality',label:'Personality',score:scores.personality},
+  ];
+  document.getElementById('scores-panel').innerHTML=cats.map(c=>{
+    const col=scoreColor(c.score);
+    return `<div class="score-row">
+      <div class="score-tag">${c.label}</div>
+      <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${c.score}%;background:${col}"></div></div>
+      <div class="score-num" style="color:${col}">${c.score}</div>
+    </div>`;
+  }).join('');
+
+  // Feedback
+  document.getElementById('feedback-section').innerHTML=`
+    <div class="feedback-zine-head">What's working</div>
+    ${strengths.map((s)=>`<div class="feedback-item"><div class="feedback-num">✅</div><div class="feedback-text">${s}</div></div>`).join('')}
+    <div class="tweak-head">What to fix before you send</div>
+    ${tweaks.map((t,i)=>`<div class="tweak-item"><div class="tweak-tag">Fix ${i+1}</div><div class="tweak-text">${t}</div></div>`).join('')}`;
+
+  showView('results');
+  window.scrollTo({top:0,behavior:'smooth'});
+  fireConfetti();
+}
+</script>
+</body>
+</html>
